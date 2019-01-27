@@ -1,4 +1,4 @@
-#include <iostream>tomek test /grzegoraz jamka
+#include <iostream>tomek test /grzegoraz jamka jest ok/
 #include <regex>
 #include <list>
 using namespace std;
