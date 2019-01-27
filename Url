@@ -1,0 +1,186 @@
+#include <iostream>
+#include <regex>
+#include <list>
+using namespace std;
+void getUrls();
+void insertUrl();
+void clearList();
+bool unique(string url,string newUrl);
+string RandomString(int len);
+list<string> longUrls;
+list<string> shortUrls;
+enum Options {
+    unknown,
+    help,
+    menu,
+    show,
+    insert,
+    h,
+    clear,
+    close
+};
+
+int main() {
+    static bool runOnce= true;
+    if(runOnce)
+    {
+        cout<<"\Wprowadz /h lub /help aby sprawdzic dostepne komendy:"<<endl;
+        runOnce = false;
+    }
+    string command;
+
+    Options resolveOption(string command);
+    cin>>command;
+
+    switch(resolveOption(command)){
+        case insert:
+            insertUrl();
+            break;
+        case show:
+            getUrls();
+            break;
+        case menu:
+            cout<<"Juz znajdujesz sie w menu "<<endl;
+            main();
+            break;
+        case help:
+            cout << "Dostepne komendy:" << endl;
+            cout << "/show   -- pokazuje wszystkie urle" << endl;
+            cout << "/insert -- pozwala na wprowadzenie nowego urla" << endl;
+            cout << "/exit   -- zamkniecie aplikacji" << endl;
+            cout << "/return -- natychmiastowy powrot do poczatku"<<endl;
+            cout << "/clear  -- czyszczenie bazy urli"<<endl;
+            main();
+            break;
+        case h:
+            cout << "Dostepne komendy:" << endl;
+            cout << "/show   -- pokazuje wszystkie urle" << endl;
+            cout << "/insert -- pozwala na wprowadzenie nowego urla" << endl;
+            cout << "/exit   -- zamkniecie aplikacji" << endl;
+            cout << "/return -- natychmiastowy powrot do poczatku"<<endl;
+            cout << "/clear  -- czyszczenie bazy urli"<<endl;
+            main();
+            break;
+        case clear:
+            clearList();
+            break;
+        case close:
+            cout<<"Zamykanie aplikacji";
+            return 0;
+        default:
+            cout<<"Nieznana komenda"<<endl;
+            cout<<"Aby poznac komendy wpisz /help lub /h"<<endl;
+            main();
+            break;
+    }
+}
+Options resolveOption(string input) {
+    if( input == "/help" ) return help;
+    if( input == "/clear" ) return clear;
+    if( input == "/show" ) return show;
+    if( input == "/return" ) return menu;
+    if( input == "/insert" ) return insert;
+    if( input == "/h" ) return h;
+    if( input == "/exit" ) return close;
+
+
+    return unknown;
+}
+void clearList(){
+    cout<<"Czyszczenie bazy"<<endl;
+    longUrls.clear();
+    shortUrls.clear();
+    cout<<"Baza wyczyszczona ;)"<<endl;
+    main();
+}
+
+void getUrls(){
+
+    if(longUrls.size()==0||shortUrls.size()==0){
+        cout<<"Baza urli jest pusta ;)"<<endl;
+        main();
+    }else {
+        cout << "Wszystkie urle zapisane w bazie" << endl;
+        cout<< "Pelny url                 ||                 Skrocony url"<<endl;
+        for (int i = 0; i < longUrls.size(); i++) {
+
+            auto it1 = next(longUrls.begin(), i);
+            auto it2 = next(shortUrls.begin(), i);
+            cout << *it1 << "        ||    " << *it2 << endl;
+        }
+        main();
+    }
+}
+
+void insertUrl(){
+    string url;
+    cout<<"Wprowadz nowy url"<<endl;
+    cin>>url;
+    if(url=="/return"){
+        main();
+    }else {
+
+
+        try {
+            regex re("(http|https):\\/\\/+(w+.)*(w*)+[a-zA-Z]*.\\w{0,3}.*");
+            if (!regex_match(url, re)) {
+                cout << "Bledny url" << endl;
+                cout << "Przykladowy url 'http://www.example.com/zxcq?123asdasd" << endl;
+                insertUrl();
+            }
+        }
+        catch (regex_error &e) {
+
+            throw (e);
+        }
+
+        int range = rand() % 3 + 4;
+        string random_str = "//" + RandomString(range);
+        regex reg("(./{2,3})");
+
+        string temp_url = regex_replace(url, reg, ":HERE_REPLACE");
+        int pos = temp_url.find("HERE_REPLACE");
+
+        string newUrl = temp_url.replace(temp_url.begin() + pos, temp_url.end(), random_str);
+        bool isUnique = unique(url,newUrl);
+        if(isUnique==true) {
+
+
+            longUrls.push_back(url);
+            shortUrls.push_back(newUrl);
+            cout<< "Url pomyslnie dodant do bazy"<<endl;
+            main();
+        }else{
+            insertUrl();
+        }
+
+    }
+}
+bool unique(string url, string newUrl){
+    for (int i = 0; i < longUrls.size(); i++) {
+
+        auto it1 = next(longUrls.begin(), i);
+        auto it2 = next(shortUrls.begin(), i);
+        if (*it1 == url) {
+            cout << "Podany url w wersji normalnej wystepuje juz w bazie " << url << endl;
+           return false;
+        } else if (*it2 == newUrl) {
+            cout << "Podany ulr w wersji skroconej wystepuje juz w bazie " << newUrl << endl;
+            return false;
+        }else{
+
+        }
+    }
+    return true;
+}
+string RandomString(int len){
+    srand(time(0));
+    string str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    string randomString;
+    int pos;
+    while(randomString.size() != len) {
+        pos = ((rand() % (str.size() - 1)));
+        randomString += str.substr(pos,1);
+    }
+    return randomString;
+}
